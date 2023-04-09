@@ -4,6 +4,8 @@ import constants.CarManufacturers;
 import constants.Colors;
 import exception.NoEngineException;
 
+import java.util.Objects;
+
 public abstract class Car implements Vehicle {
     private final CarManufacturers manufacturer;
     private final String model;
@@ -65,5 +67,21 @@ public abstract class Car implements Vehicle {
             return this.getManufacturer().name() + " " +  this.getYear() + " " + this.getColor() + " Motor: " + this.getEngine().smallDetails();
         else
             return this.getManufacturer().name() + " " +  this.getYear() + " " + this.getColor() + " Motor: FARA - doar caroserie";
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (!(obj instanceof Car)) {
+            return false;
+        }
+
+        Car car = (Car) obj;
+        return this.getManufacturer().name().equals(car.getManufacturer().name())
+                && Objects.equals(this.getModel(), car.getModel())
+                && this.getYear() == car.getYear()
+                && this.getColor().name().equals(car.getColor().name());
     }
 }

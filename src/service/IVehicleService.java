@@ -17,4 +17,6 @@ public interface IVehicleService{
     void removePetrolEngine(PetrolEngine eng);
     void addEngineToCar(int carIndex, int engineIndex, boolean diesel);
     void addEngineToMotorcycle(int carIndex, int engineIndex);
+    void removeCar(int carIndex);
+    void removeMotorcycle(int carIndex);
 }

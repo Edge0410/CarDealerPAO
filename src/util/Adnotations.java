@@ -4,7 +4,7 @@ import java.util.InputMismatchException;
 
 public class Adnotations {
     public static void showOptions(){
-        System.out.println("Alegeti operatia dorita:\n\n 1. Adaugati o masina\n 2. Adauga o motocicleta \n 3. Adaugati un motor \n 4. Vizualizati motoarele disponibile \n 5. Eliminati un motor \n 6. Vizualizati masinile \n 7. Vizualizati motocicletele \n 8. Adaugati un motor la o masina \n 9. Adaugati un motor la o motocicleta (Doar pe benzina!) \n 0. Iesire\n");
+        System.out.println("Alegeti operatia dorita:\n\n 1. Adaugati o masina\n 2. Adauga o motocicleta \n 3. Adaugati un motor \n 4. Vizualizati motoarele disponibile \n 5. Eliminati un motor \n 6. Vizualizati masinile \n 7. Vizualizati motocicletele \n 8. Adaugati un motor la o masina \n 9. Adaugati un motor la o motocicleta (Doar pe benzina!) \n 10. Eliminati o masina \n 11. Eliminati o motocicleta \n 0. Iesire\n");
     }
 
     public static void showInvalidOption(){

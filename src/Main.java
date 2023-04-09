@@ -11,10 +11,11 @@ import service.VehicleService;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+import static java.lang.Thread.sleep;
 import static util.Adnotations.*;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         Scanner in = new Scanner(System.in);
         boolean active = true;
@@ -22,6 +23,7 @@ public class Main {
         VehicleService serviciuDefault = new VehicleService();
 
         while(active){
+            sleep(500);
             showOptions();
             try {
                 int option = in.nextInt();
@@ -284,6 +286,38 @@ public class Main {
                             showAddEngineOptions(2);
                             int engine = in.nextInt();
                             serviciuDefault.addEngineToMotorcycle(car, engine);
+                            break;
+                        }
+                        catch (InputMismatchException exception){
+                            in.nextLine();
+                            showInvalidOption();
+                        }
+                        catch (Exception exception){
+                            in.nextLine();
+                            showBadIndex();
+                        }
+                        break;
+                    case 10:
+                        try{
+                            System.out.println("Introduceti indexul masinii pe care doriti sa o stergeti: \n");
+                            int car = in.nextInt();
+                            serviciuDefault.removeCar(car);
+                            break;
+                        }
+                        catch (InputMismatchException exception){
+                            in.nextLine();
+                            showInvalidOption();
+                        }
+                        catch (Exception exception){
+                            in.nextLine();
+                            showBadIndex();
+                        }
+                        break;
+                    case 11:
+                        try{
+                            System.out.println("Introduceti indexul motocicletei pe care doriti sa o stergeti: \n");
+                            int car = in.nextInt();
+                            serviciuDefault.removeMotorcycle(car);
                             break;
                         }
                         catch (InputMismatchException exception){

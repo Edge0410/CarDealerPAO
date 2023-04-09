@@ -190,4 +190,30 @@ public class VehicleService implements IVehicleService{
         car.setEngine(engine);
         System.out.println("Motorul a fost adaugat pe motocicleta!");
     }
+
+    public void removeCar(int carIndex){
+        int count = 0;
+        for(Car car : cars){
+            count++;
+            if(count == carIndex) {
+                cars.remove(car);
+                System.out.println("Masina a fost eliminata cu succes!");
+                return ;
+            }
+        }
+        throw new ArrayIndexOutOfBoundsException("");
+    }
+
+    public void removeMotorcycle(int carIndex){
+        int count = 0;
+        for(Motorcycle car : motorcycles){
+            count++;
+            if(count == carIndex) {
+                motorcycles.remove(car);
+                System.out.println("Motocicleta a fost eliminata cu succes!");
+                return ;
+            }
+        }
+        throw new ArrayIndexOutOfBoundsException("");
+    }
 }
