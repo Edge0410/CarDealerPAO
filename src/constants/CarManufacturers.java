@@ -1,5 +1,5 @@
 package constants;
 
 public enum CarManufacturers {
-    AUDI, BMW, OPEL, MERCEDES
+    AUDI, BMW, OPEL, MERCEDES, HONDA
 }

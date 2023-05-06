@@ -2,6 +2,7 @@ package service;
 
 import model.*;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface IVehicleService{
@@ -19,4 +20,8 @@ public interface IVehicleService{
     void addEngineToMotorcycle(int carIndex, int engineIndex);
     void removeCar(int carIndex);
     void removeMotorcycle(int carIndex);
+    void loadSedansFromCSV(String filePath) throws IOException;
+    void loadSportbikesFromCSV(String filePath) throws IOException;
+    void loadPetrolEnginesFromCSV(String filePath) throws IOException;
+    void loadDieselEnginesFromCSV(String filePath) throws IOException;
 }

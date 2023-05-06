@@ -22,6 +22,35 @@ public class Main {
 
         VehicleService serviciuDefault = new VehicleService();
 
+        try{
+            serviciuDefault.loadSedansFromCSV("src/util/sedan.csv");
+        }
+        catch (Exception exception){
+            System.out.println("Nu au putut fi citite sedanurile din fisier!");
+        }
+
+        try{
+            serviciuDefault.loadSportbikesFromCSV("src/util/sportbike.csv");
+        }
+        catch (Exception exception){
+            System.out.println("Nu au putut fi citite motociclete sport din fisier!");
+        }
+
+        try{
+            serviciuDefault.loadPetrolEnginesFromCSV("src/util/petrolEngine.csv");
+        }
+        catch (Exception exception){
+            System.out.println("Nu au putut fi citite motoarele pe benzina din fisier!");
+        }
+
+        try{
+            serviciuDefault.loadDieselEnginesFromCSV("src/util/dieselEngine.csv");
+        }
+        catch (Exception exception){
+            System.out.println("Nu au putut fi citite motoarele pe motorina din fisier!");
+        }
+
+
         while(active){
             sleep(500);
             showOptions();

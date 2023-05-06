@@ -2,7 +2,9 @@ package service;
 
 import exception.*;
 import model.*;
+import service.generics.CSVReaderService;
 
+import java.io.IOException;
 import java.util.*;
 
 import static validation.VehicleValidation.*;
@@ -12,6 +14,49 @@ public class VehicleService implements IVehicleService{
     private List<Motorcycle> motorcycles = new ArrayList<>();
     private Map<Double, List<DieselEngine>> dieselEngines = new TreeMap<>();
     private Map<Double, List<PetrolEngine>> petrolEngines = new TreeMap<>();
+
+    public void loadSedansFromCSV(String filePath) throws IOException {
+        List<Sedan> sedans = CSVReaderService.getInstance().readSedansFromCSV(filePath);
+        cars.addAll(sedans);
+    }
+
+    public void loadSportbikesFromCSV(String filePath) throws IOException{
+        List<Sportbike> sportbikes = CSVReaderService.getInstance().readSportbikesFromCSV(filePath);
+        motorcycles.addAll(sportbikes);
+    }
+
+    public void loadPetrolEnginesFromCSV(String filePath) throws IOException {
+        List<PetrolEngine> petrolEngines = CSVReaderService.getInstance().readPetrolEnginesFromCSV(filePath);
+        for (PetrolEngine engine : petrolEngines) {
+            if (this.petrolEngines.containsKey(engine.getCapacity())) {
+                List<PetrolEngine> list = this.petrolEngines.get(engine.getCapacity());
+                list.add(engine);
+                this.petrolEngines.put(engine.getCapacity(), list);
+            } else {
+                List<PetrolEngine> list = new ArrayList<>();
+                list.add(engine);
+                this.petrolEngines.put(engine.getCapacity(), list);
+            }
+        }
+    }
+
+    public void loadDieselEnginesFromCSV(String filePath) throws IOException {
+        List<DieselEngine> dieselEngines = CSVReaderService.getInstance().readDieselEnginesFromCSV(filePath);
+        for (DieselEngine engine : dieselEngines) {
+            if (this.dieselEngines.containsKey(engine.getCapacity())) {
+                List<DieselEngine> list = this.dieselEngines.get(engine.getCapacity());
+                list.add(engine);
+                this.dieselEngines.put(engine.getCapacity(), list);
+            } else {
+                List<DieselEngine> list = new ArrayList<>();
+                list.add(engine);
+                this.dieselEngines.put(engine.getCapacity(), list);
+            }
+        }
+    }
+
+
+
 
     public void addCar(Car car){
         if(!validateYear(car.getYear()))
