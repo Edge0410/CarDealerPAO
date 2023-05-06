@@ -19,6 +19,7 @@ public class VehicleService implements IVehicleService{
         if(!validateCapacity(car.getSeatCapacity()))
             throw new InvalidSeatCountException("Numarul de locuri este invalid!");
         cars.add(car);
+        AuditService.getInstance().write("Masina " + car.getManufacturer() + " " + car.getModel() + " a fost adaugata");
         System.out.println("Masina a fost adaugata cu succes!");
     }
 
@@ -30,6 +31,7 @@ public class VehicleService implements IVehicleService{
         if(!validateWheelCount(mtr.getWheelCount()))
             throw new InvalidWheelCountException("Numarul de pneuri ale motocicletei este invalid!");
         motorcycles.add(mtr);
+        AuditService.getInstance().write("Motocicleta " + mtr.getManufacturer() + " " + mtr.getModel() + " a fost adaugata");
         System.out.println("Motocicleta a fost adaugata cu succes!\n");
     }
 
@@ -42,9 +44,9 @@ public class VehicleService implements IVehicleService{
             throw new InvalidEngineSpecsException("Volumul motorului este invalid!");
         if(!validateTorque(eng.getTorque()))
             throw new InvalidEngineSpecsException("Cuplul motorului este invalid!");
-
         petrolEngines.putIfAbsent(eng.getCapacity(), new ArrayList<PetrolEngine>());
         petrolEngines.get(eng.getCapacity()).add(eng);
+        AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost adaugat");
         System.out.println("Motorul a fost adaugat cu succes!\n");
     }
 
@@ -59,6 +61,7 @@ public class VehicleService implements IVehicleService{
             throw new InvalidEngineSpecsException("Cuplul motorului este invalid!");
         dieselEngines.putIfAbsent(eng.getCapacity(), new ArrayList<DieselEngine>());
         dieselEngines.get(eng.getCapacity()).add(eng);
+        AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost adaugat");
         System.out.println("Motorul a fost adaugat cu succes!\n");
     }
 
@@ -113,6 +116,7 @@ public class VehicleService implements IVehicleService{
             for (Iterator<DieselEngine> it = engines.iterator(); it.hasNext();) {
                 DieselEngine engine = it.next();
                 if (engine.equals(eng)) {
+                    AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost sters");
                     it.remove();
                     System.out.println("Motorul a fost eliminat cu succes!\n");
                     return;
@@ -128,6 +132,7 @@ public class VehicleService implements IVehicleService{
             for (Iterator<PetrolEngine> it = engines.iterator(); it.hasNext();) {
                 PetrolEngine engine = it.next();
                 if (engine.equals(eng)) {
+                    AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost sters");
                     it.remove();
                     System.out.println("Motorul a fost eliminat cu succes!\n");
                     return;
@@ -153,6 +158,7 @@ public class VehicleService implements IVehicleService{
                 }
             }
             car.setEngine(engine);
+            AuditService.getInstance().write("Motorul " + engine.getCapacity() +" a fost adaugat la masina " + car.getModel());
             System.out.println("Motorul a fost adaugat pe masina!");
         }
         else
@@ -169,6 +175,7 @@ public class VehicleService implements IVehicleService{
                 }
             }
             car.setEngine(engine);
+            AuditService.getInstance().write("Motorul " + engine.getCapacity() +" a fost adaugat la masina " + car.getModel());
             System.out.println("Motorul a fost adaugat pe masina!");
         }
     }
@@ -188,6 +195,7 @@ public class VehicleService implements IVehicleService{
             }
         }
         car.setEngine(engine);
+        AuditService.getInstance().write("Motorul " + engine.getCapacity() +" a fost adaugat la motocicleta " + car.getModel());
         System.out.println("Motorul a fost adaugat pe motocicleta!");
     }
 
@@ -196,6 +204,7 @@ public class VehicleService implements IVehicleService{
         for(Car car : cars){
             count++;
             if(count == carIndex) {
+                AuditService.getInstance().write("Masina " + car.getModel() + " a fost stearsa");
                 cars.remove(car);
                 System.out.println("Masina a fost eliminata cu succes!");
                 return ;
@@ -209,6 +218,7 @@ public class VehicleService implements IVehicleService{
         for(Motorcycle car : motorcycles){
             count++;
             if(count == carIndex) {
+                AuditService.getInstance().write("Motocicleta " + car.getModel() + " a fost stearsa");
                 motorcycles.remove(car);
                 System.out.println("Motocicleta a fost eliminata cu succes!");
                 return ;
