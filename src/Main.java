@@ -1,3 +1,4 @@
+import config.DatabaseConfig;
 import constants.Colors;
 import constants.MotorcycleManufacturers;
 import constants.MotorcycleSuspensions;
@@ -6,8 +7,11 @@ import exception.InvalidSeatCountException;
 import exception.InvalidYearException;
 import model.*;
 import constants.CarManufacturers;
+import service.DatabaseService;
 import service.VehicleService;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -15,13 +19,12 @@ import static java.lang.Thread.sleep;
 import static util.Adnotations.*;
 
 public class Main {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, SQLException {
 
         Scanner in = new Scanner(System.in);
         boolean active = true;
 
-        VehicleService serviciuDefault = new VehicleService();
-
+        /*
         try{
             serviciuDefault.loadSedansFromCSV("src/util/sedan.csv");
         }
@@ -50,6 +53,12 @@ public class Main {
             System.out.println("Nu au putut fi citite motoarele pe motorina din fisier!");
         }
 
+        */
+        System.out.println("Se incarca inregistrarile din baza de date... \n \n");
+        DatabaseService.getInstance().loadDieselEngines();
+        DatabaseService.getInstance().loadPetrolEngines();
+        DatabaseService.getInstance().loadSedans();
+        DatabaseService.getInstance().loadSportbikes();
 
         while(active){
             sleep(500);
@@ -74,7 +83,8 @@ public class Main {
                                         showCarOptions(4);
                                         int culoare = in.nextInt();
                                         Sedan sedan = new Sedan(CarManufacturers.values()[marca - 1], model, an, Colors.values()[culoare - 1]);
-                                        serviciuDefault.addCar(sedan);
+                                        VehicleService.getInstance().addCar(sedan);
+                                        DatabaseService.getInstance().addSedanToDb(sedan);
                                     }
                                     catch (InputMismatchException exception){
                                         in.nextLine();
@@ -95,7 +105,7 @@ public class Main {
                                         showCarOptions(5);
                                         int locuri = in.nextInt();
                                         Hatchback hatchback = new Hatchback(CarManufacturers.values()[marca - 1], model, an, Colors.values()[culoare - 1], locuri);
-                                        serviciuDefault.addCar(hatchback);
+                                        VehicleService.getInstance().addCar(hatchback);
                                     }
                                     catch (InputMismatchException exception){
                                         in.nextLine();
@@ -116,7 +126,7 @@ public class Main {
                                     showCarOptions(6);
                                     boolean fourWD = in.nextBoolean();
                                     Suv suv = new Suv(CarManufacturers.values()[marca - 1], model, an, Colors.values()[culoare - 1], fourWD);
-                                    serviciuDefault.addCar(suv);
+                                    VehicleService.getInstance().addCar(suv);
                                     break;
                                 default:
                                     throw new InputMismatchException("");
@@ -150,8 +160,7 @@ public class Main {
                                         showMotorcycleOptions(5);
                                         int wheels = in.nextInt();
                                         Cruiser cruiser = new Cruiser(MotorcycleManufacturers.values()[marca - 1], model, an, Colors.values()[culoare - 1], wheels);
-                                        serviciuDefault.addMotorcycle(cruiser);
-                                        serviciuDefault.getMotorcycles();
+                                        VehicleService.getInstance().addMotorcycle(cruiser);
                                         break;
                                     }
                                     catch (InputMismatchException exception){
@@ -173,8 +182,8 @@ public class Main {
                                         showMotorcycleOptions(6);
                                         int viteza = in.nextInt();
                                         Sportbike sportbike = new Sportbike(MotorcycleManufacturers.values()[marca - 1], model, an, Colors.values()[culoare - 1], viteza);
-                                        serviciuDefault.addMotorcycle(sportbike);
-                                        serviciuDefault.getMotorcycles();
+                                        VehicleService.getInstance().addMotorcycle(sportbike);
+                                        DatabaseService.getInstance().addSportbikeToDb(sportbike);
                                         break;
                                     }
                                     catch (InputMismatchException exception){
@@ -196,8 +205,7 @@ public class Main {
                                         showMotorcycleOptions(7);
                                         int suspensii = in.nextInt();
                                         Dirtbike dirtbike = new Dirtbike(MotorcycleManufacturers.values()[marca - 1], model, an, Colors.values()[culoare - 1], MotorcycleSuspensions.values()[suspensii - 1]);
-                                        serviciuDefault.addMotorcycle(dirtbike);
-                                        serviciuDefault.getMotorcycles();
+                                        VehicleService.getInstance().addMotorcycle(dirtbike);
                                         break;
                                     }
                                     catch (InputMismatchException exception){
@@ -233,11 +241,13 @@ public class Main {
                             boolean diesel = in.nextBoolean();
                             if(diesel){
                                 DieselEngine eng = new DieselEngine(cap, cai, cil, cuplu);
-                                serviciuDefault.addDieselEngine(eng);
+                                VehicleService.getInstance().addDieselEngine(eng);
+                                DatabaseService.getInstance().addDieselEngineToDb(eng);
                             }
                             else{
                                 PetrolEngine eng = new PetrolEngine(cap, cai, cil, cuplu);
-                                serviciuDefault.addPetrolEngine(eng);
+                                VehicleService.getInstance().addPetrolEngine(eng);
+                                DatabaseService.getInstance().addPetrolEngineToDb(eng);
                             }
                         }
                         catch (InputMismatchException exception){
@@ -247,10 +257,10 @@ public class Main {
                         break;
                     case 4:
                         System.out.println("Motoare pe Diesel disponibile: \n");
-                        if(serviciuDefault.getDieselEngines() == 0)
+                        if(VehicleService.getInstance().getDieselEngines() == 0)
                             System.out.println("Nu exista motoare Diesel disponibile!");
                         System.out.println("\nMotoare pe benzina disponibile: \n");
-                        if(serviciuDefault.getPetrolEngines() == 0)
+                        if(VehicleService.getInstance().getPetrolEngines() == 0)
                             System.out.println("Nu exista motoare pe Benzina disponibile! \n");
                         in.nextLine();
                         break;
@@ -269,11 +279,11 @@ public class Main {
                             boolean diesel = in.nextBoolean();
                             if(diesel){
                                 DieselEngine eng = new DieselEngine(cap, cai, cil, cuplu);
-                                serviciuDefault.removeDieselEngine(eng);
+                                VehicleService.getInstance().removeDieselEngine(eng);
                             }
                             else{
                                 PetrolEngine eng = new PetrolEngine(cap, cai, cil, cuplu);
-                                serviciuDefault.removePetrolEngine(eng);
+                                VehicleService.getInstance().removePetrolEngine(eng);
                             }
                         }
                         catch (InputMismatchException exception){
@@ -282,10 +292,10 @@ public class Main {
                         }
                         break;
                     case 6:
-                        serviciuDefault.getCars();
+                        VehicleService.getInstance().getCars();
                         break;
                     case 7:
-                        serviciuDefault.getMotorcycles();
+                        VehicleService.getInstance().getMotorcycles();
                         break;
                     case 8:
                         try{
@@ -296,7 +306,7 @@ public class Main {
                             in.nextLine();
                             showAddEngineOptions(3);
                             boolean diesel = in.nextBoolean();
-                            serviciuDefault.addEngineToCar(car, engine, diesel);
+                            VehicleService.getInstance().addEngineToCar(car, engine, diesel);
                             break;
                         }
                         catch (InputMismatchException exception){
@@ -314,7 +324,7 @@ public class Main {
                             int car = in.nextInt();
                             showAddEngineOptions(2);
                             int engine = in.nextInt();
-                            serviciuDefault.addEngineToMotorcycle(car, engine);
+                            VehicleService.getInstance().addEngineToMotorcycle(car, engine);
                             break;
                         }
                         catch (InputMismatchException exception){
@@ -330,7 +340,7 @@ public class Main {
                         try{
                             System.out.println("Introduceti indexul masinii pe care doriti sa o stergeti: \n");
                             int car = in.nextInt();
-                            serviciuDefault.removeCar(car);
+                            VehicleService.getInstance().removeCar(car);
                             break;
                         }
                         catch (InputMismatchException exception){
@@ -338,6 +348,7 @@ public class Main {
                             showInvalidOption();
                         }
                         catch (Exception exception){
+                            System.out.println(exception.getMessage());
                             in.nextLine();
                             showBadIndex();
                         }
@@ -346,7 +357,7 @@ public class Main {
                         try{
                             System.out.println("Introduceti indexul motocicletei pe care doriti sa o stergeti: \n");
                             int car = in.nextInt();
-                            serviciuDefault.removeMotorcycle(car);
+                            VehicleService.getInstance().removeMotorcycle(car);
                             break;
                         }
                         catch (InputMismatchException exception){
@@ -377,5 +388,7 @@ public class Main {
             }
 
         }
+        Connection connection = DatabaseConfig.getInstance().getDatabaseConnection();
+        connection.close();
     }
 }

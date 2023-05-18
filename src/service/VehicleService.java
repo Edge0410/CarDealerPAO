@@ -1,19 +1,33 @@
 package service;
 
+import config.DatabaseConfig;
 import exception.*;
 import model.*;
 import service.generics.CSVReaderService;
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.*;
 
 import static validation.VehicleValidation.*;
 
 public class VehicleService implements IVehicleService{
-    private List<Car> cars = new ArrayList<>();
-    private List<Motorcycle> motorcycles = new ArrayList<>();
-    private Map<Double, List<DieselEngine>> dieselEngines = new TreeMap<>();
-    private Map<Double, List<PetrolEngine>> petrolEngines = new TreeMap<>();
+    private static VehicleService instance;
+    private static List<Car> cars = new ArrayList<>();
+    private static List<Motorcycle> motorcycles = new ArrayList<>();
+    private static Map<Double, List<DieselEngine>> dieselEngines = new TreeMap<>();
+    private static Map<Double, List<PetrolEngine>> petrolEngines = new TreeMap<>();
+
+    private VehicleService(){
+
+    }
+
+    public static VehicleService getInstance(){
+        if (instance == null)
+            instance = new VehicleService();
+
+        return instance;
+    }
 
     public void loadSedansFromCSV(String filePath) throws IOException {
         List<Sedan> sedans = CSVReaderService.getInstance().readSedansFromCSV(filePath);
@@ -54,9 +68,6 @@ public class VehicleService implements IVehicleService{
             }
         }
     }
-
-
-
 
     public void addCar(Car car){
         if(!validateYear(car.getYear()))
@@ -155,7 +166,7 @@ public class VehicleService implements IVehicleService{
         return count;
     }
 
-    public void removeDieselEngine(DieselEngine eng) {
+    public void removeDieselEngine(DieselEngine eng) throws SQLException {
         List<DieselEngine> engines = dieselEngines.get(eng.getCapacity());
         if (engines != null) {
             for (Iterator<DieselEngine> it = engines.iterator(); it.hasNext();) {
@@ -163,6 +174,7 @@ public class VehicleService implements IVehicleService{
                 if (engine.equals(eng)) {
                     AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost sters");
                     it.remove();
+                    DatabaseService.getInstance().deleteDieselEngineFromDb(eng);
                     System.out.println("Motorul a fost eliminat cu succes!\n");
                     return;
                 }
@@ -171,7 +183,7 @@ public class VehicleService implements IVehicleService{
         System.out.println("Motorul nu a fost gasit!\n");
     }
 
-    public void removePetrolEngine(PetrolEngine eng) {
+    public void removePetrolEngine(PetrolEngine eng) throws SQLException {
         List<PetrolEngine> engines = petrolEngines.get(eng.getCapacity());
         if (engines != null) {
             for (Iterator<PetrolEngine> it = engines.iterator(); it.hasNext();) {
@@ -179,6 +191,7 @@ public class VehicleService implements IVehicleService{
                 if (engine.equals(eng)) {
                     AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost sters");
                     it.remove();
+                    DatabaseService.getInstance().deletePetrolEngineFromDb(eng);
                     System.out.println("Motorul a fost eliminat cu succes!\n");
                     return;
                 }
@@ -188,6 +201,10 @@ public class VehicleService implements IVehicleService{
     }
 
     public void addEngineToCar(int carIndex, int engineIndex, boolean diesel) {
+        if(carIndex == -1)
+        {
+            carIndex = cars.size();
+        }
         Car car = cars.get(carIndex - 1);
 
         if(!diesel) {
@@ -226,6 +243,10 @@ public class VehicleService implements IVehicleService{
     }
 
     public void addEngineToMotorcycle(int carIndex, int engineIndex) {
+        if(carIndex == -1)
+        {
+            carIndex = motorcycles.size();
+        }
         Motorcycle car = motorcycles.get(carIndex - 1);
 
         int count = 0;
@@ -244,13 +265,21 @@ public class VehicleService implements IVehicleService{
         System.out.println("Motorul a fost adaugat pe motocicleta!");
     }
 
-    public void removeCar(int carIndex){
+    public void removeCar(int carIndex) throws SQLException {
         int count = 0;
         for(Car car : cars){
             count++;
             if(count == carIndex) {
                 AuditService.getInstance().write("Masina " + car.getModel() + " a fost stearsa");
+                Car copycar = car;
                 cars.remove(car);
+
+                // in cazul in care este sedan - vreau sa sterg si din baza de date
+                if(copycar instanceof Sedan)
+                {
+                    DatabaseService.getInstance().deleteSedanFromDb((Sedan) copycar);
+                }
+
                 System.out.println("Masina a fost eliminata cu succes!");
                 return ;
             }
@@ -258,17 +287,105 @@ public class VehicleService implements IVehicleService{
         throw new ArrayIndexOutOfBoundsException("");
     }
 
-    public void removeMotorcycle(int carIndex){
+    public void removeMotorcycle(int carIndex) throws SQLException {
         int count = 0;
         for(Motorcycle car : motorcycles){
             count++;
             if(count == carIndex) {
                 AuditService.getInstance().write("Motocicleta " + car.getModel() + " a fost stearsa");
+                Motorcycle copycar = car;
                 motorcycles.remove(car);
+                // in cazul in care este sedan - vreau sa sterg si din baza de date
+                if(copycar instanceof Sportbike)
+                {
+                    DatabaseService.getInstance().deleteSportbikeFromDb((Sportbike)copycar);
+                }
                 System.out.println("Motocicleta a fost eliminata cu succes!");
                 return ;
             }
         }
         throw new ArrayIndexOutOfBoundsException("");
+    }
+
+    public int findDieselEngineById(int engineId) throws SQLException {
+
+        Connection connection = DatabaseConfig.getInstance().getDatabaseConnection();
+        Statement statement = connection.createStatement();
+
+        String sql = "SELECT * FROM bdpao.dieselengines where id = " + engineId;
+        ResultSet resultSet = statement.executeQuery(sql);
+
+        while (resultSet.next()) {
+            double capacity = resultSet.getDouble("capacity");
+            int horsePower = resultSet.getInt("horsepower");
+            int cylinderNumber = resultSet.getInt("cylindernumber");
+            int torque = resultSet.getInt("torque");
+
+            int count = 0;
+            for (List<DieselEngine> engines : dieselEngines.values()) {
+                for(DieselEngine eng : engines){
+                    count++;
+                    if(capacity == eng.getCapacity() && horsePower == eng.getHorsePower() && cylinderNumber == eng.getCylinderNumber() && torque == eng.getTorque()){ // daca motorul coincide cu cel ales
+                        resultSet.close();
+                        statement.close();
+                        return count;
+                    }
+                }
+            }
+        }
+        resultSet.close();
+        statement.close();
+        return -1;
+    }
+
+    public int findPetrolEngineById(int engineId) throws SQLException {
+
+        Connection connection = DatabaseConfig.getInstance().getDatabaseConnection();
+        Statement statement = connection.createStatement();
+
+        String sql = "SELECT * FROM bdpao.petrolengines where id = " + engineId;
+        ResultSet resultSet = statement.executeQuery(sql);
+
+        while (resultSet.next()) {
+            double capacity = resultSet.getDouble("capacity");
+            int horsePower = resultSet.getInt("horsepower");
+            int cylinderNumber = resultSet.getInt("cylindernumber");
+            int torque = resultSet.getInt("torque");
+
+            int count = 0;
+            for (List<PetrolEngine> engines : petrolEngines.values()) {
+                for(PetrolEngine eng : engines){
+                    count++;
+                    if(capacity == eng.getCapacity() && horsePower == eng.getHorsePower() && cylinderNumber == eng.getCylinderNumber() && torque == eng.getTorque()){ // daca motorul coincide cu cel ales
+                        resultSet.close();
+                        statement.close();
+                        return count;
+                    }
+                }
+            }
+        }
+        resultSet.close();
+        statement.close();
+        return -1;
+    }
+
+    public int getEngineIdFromDatabase(Car sedan) throws SQLException {
+        int engineId = -1; // Default value if engine not found
+        Connection connection = DatabaseConfig.getInstance().getDatabaseConnection();
+        PreparedStatement statement = connection.prepareStatement(
+                "SELECT id FROM engines WHERE capacity = ? AND horsePower = ? AND cylinderNumber = ? AND torque = ?"
+        );
+        statement.setDouble(1, sedan.getEngine().getCapacity());
+        statement.setInt(2, sedan.getEngine().getHorsePower());
+        statement.setInt(3, sedan.getEngine().getCylinderNumber());
+        statement.setInt(4, sedan.getEngine().getTorque());
+        ResultSet resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            engineId = resultSet.getInt("id");
+        }
+
+        statement.close();
+        return engineId;
     }
 }

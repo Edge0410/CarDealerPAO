@@ -3,6 +3,7 @@ package service;
 import model.*;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 public interface IVehicleService{
@@ -14,12 +15,12 @@ public interface IVehicleService{
     void getMotorcycles();
     int getDieselEngines();
     int getPetrolEngines();
-    void removeDieselEngine(DieselEngine eng);
-    void removePetrolEngine(PetrolEngine eng);
+    void removeDieselEngine(DieselEngine eng) throws SQLException;
+    void removePetrolEngine(PetrolEngine eng) throws SQLException;
     void addEngineToCar(int carIndex, int engineIndex, boolean diesel);
     void addEngineToMotorcycle(int carIndex, int engineIndex);
-    void removeCar(int carIndex);
-    void removeMotorcycle(int carIndex);
+    void removeCar(int carIndex) throws SQLException;
+    void removeMotorcycle(int carIndex) throws SQLException;
     void loadSedansFromCSV(String filePath) throws IOException;
     void loadSportbikesFromCSV(String filePath) throws IOException;
     void loadPetrolEnginesFromCSV(String filePath) throws IOException;
