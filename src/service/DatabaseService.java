@@ -4,10 +4,7 @@ import config.DatabaseConfig;
 import constants.CarManufacturers;
 import constants.Colors;
 import constants.MotorcycleManufacturers;
-import model.DieselEngine;
-import model.PetrolEngine;
-import model.Sedan;
-import model.Sportbike;
+import model.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -93,8 +90,6 @@ public class DatabaseService {
 
             Sedan sedan = new Sedan(manufacturer, model, year, color);
             VehicleService.getInstance().addCar(sedan);
-            VehicleService.getInstance().getCars();
-
             //cautam indexul motorului care este pus pe masina
 
             int engineIndex = -1;
@@ -131,8 +126,6 @@ public class DatabaseService {
 
             Sportbike sedan = new Sportbike(manufacturer, model, year, color, maxSpeed);
             VehicleService.getInstance().addMotorcycle(sedan);
-            VehicleService.getInstance().getMotorcycles();
-
             //cautam indexul motorului care este pus pe masina
 
             int engineIndex = -1;
@@ -370,10 +363,151 @@ public class DatabaseService {
         } else {
             System.out.println("Nu au fost gasite astfel de motoare.");
         }
-
         resultSet.close();
         selectStatement.close();
     }
+
+    public void addPetrolEngineToSedanDb(PetrolEngine petrolEngine, Sedan car) throws SQLException {
+        Connection connection = DatabaseConfig.getInstance().getDatabaseConnection();
+
+        PreparedStatement selectEngineStatement = connection.prepareStatement(
+                "SELECT id FROM petrolengines WHERE capacity = ? AND horsePower = ? AND cylinderNumber = ? AND torque = ?"
+        );
+        selectEngineStatement.setDouble(1, petrolEngine.getCapacity());
+        selectEngineStatement.setInt(2, petrolEngine.getHorsePower());
+        selectEngineStatement.setInt(3, petrolEngine.getCylinderNumber());
+        selectEngineStatement.setInt(4, petrolEngine.getTorque());
+        ResultSet engineResultSet = selectEngineStatement.executeQuery();
+
+        int petrolEngineId = -1;
+        if (engineResultSet.next()) {
+            petrolEngineId = engineResultSet.getInt("id");
+        }
+
+        engineResultSet.close();
+        selectEngineStatement.close();
+
+        PreparedStatement selectSedanStatement = connection.prepareStatement(
+                "SELECT id FROM sedans WHERE manufacturer = ? AND model = ? AND year = ? AND color = ?"
+        );
+        selectSedanStatement.setString(1, car.getManufacturer().name());
+        selectSedanStatement.setString(2, car.getModel());
+        selectSedanStatement.setInt(3, car.getYear());
+        selectSedanStatement.setString(4, car.getColor().name());
+        ResultSet sedanResultSet = selectSedanStatement.executeQuery();
+
+        while (sedanResultSet.next()) {
+            int sedanId = sedanResultSet.getInt("id");
+            PreparedStatement updateStatement = connection.prepareStatement(
+                    "UPDATE sedans SET petrolengine_id = ?, dieselengine_id = null WHERE id = ?"
+            );
+            updateStatement.setInt(1, petrolEngineId);
+            updateStatement.setInt(2, sedanId);
+            updateStatement.executeUpdate();
+            updateStatement.close();
+
+            System.out.println("Baza de date a fost actualizata.");
+        }
+
+        sedanResultSet.close();
+        selectSedanStatement.close();
+    }
+
+    public void addDieselEngineToSedanDb(DieselEngine dieselEngine, Sedan car) throws SQLException {
+        Connection connection = DatabaseConfig.getInstance().getDatabaseConnection();
+
+        PreparedStatement selectEngineStatement = connection.prepareStatement(
+                "SELECT id FROM dieselengines WHERE capacity = ? AND horsePower = ? AND cylinderNumber = ? AND torque = ?"
+        );
+        selectEngineStatement.setDouble(1, dieselEngine.getCapacity());
+        selectEngineStatement.setInt(2, dieselEngine.getHorsePower());
+        selectEngineStatement.setInt(3, dieselEngine.getCylinderNumber());
+        selectEngineStatement.setInt(4, dieselEngine.getTorque());
+        ResultSet engineResultSet = selectEngineStatement.executeQuery();
+
+        int dieselEngineId = -1;
+        if (engineResultSet.next()) {
+            dieselEngineId = engineResultSet.getInt("id");
+        }
+
+        engineResultSet.close();
+        selectEngineStatement.close();
+
+        PreparedStatement selectSedanStatement = connection.prepareStatement(
+                "SELECT id FROM sedans WHERE manufacturer = ? AND model = ? AND year = ? AND color = ?"
+        );
+        selectSedanStatement.setString(1, car.getManufacturer().name());
+        selectSedanStatement.setString(2, car.getModel());
+        selectSedanStatement.setInt(3, car.getYear());
+        selectSedanStatement.setString(4, car.getColor().name());
+        ResultSet sedanResultSet = selectSedanStatement.executeQuery();
+
+        while (sedanResultSet.next()) {
+            int sedanId = sedanResultSet.getInt("id");
+            PreparedStatement updateStatement = connection.prepareStatement(
+                    "UPDATE sedans SET dieselengine_id = ?, petrolengine_id = null WHERE id = ?"
+            );
+            updateStatement.setInt(1, dieselEngineId);
+            updateStatement.setInt(2, sedanId);
+            updateStatement.executeUpdate();
+            updateStatement.close();
+
+            System.out.println("Baza de date a fost actualizata.");
+        }
+
+        sedanResultSet.close();
+        selectSedanStatement.close();
+    }
+
+    public void addPetrolEngineToSportbikeDb(PetrolEngine petrolEngine, Sportbike sportbike) throws SQLException {
+        Connection connection = DatabaseConfig.getInstance().getDatabaseConnection();
+
+        PreparedStatement selectEngineStatement = connection.prepareStatement(
+                "SELECT id FROM petrolengines WHERE capacity = ? AND horsePower = ? AND cylinderNumber = ? AND torque = ?"
+        );
+        selectEngineStatement.setDouble(1, petrolEngine.getCapacity());
+        selectEngineStatement.setInt(2, petrolEngine.getHorsePower());
+        selectEngineStatement.setInt(3, petrolEngine.getCylinderNumber());
+        selectEngineStatement.setInt(4, petrolEngine.getTorque());
+        ResultSet engineResultSet = selectEngineStatement.executeQuery();
+
+        int petrolEngineId = -1;
+        if (engineResultSet.next()) {
+            petrolEngineId = engineResultSet.getInt("id");
+        }
+
+        engineResultSet.close();
+        selectEngineStatement.close();
+
+        PreparedStatement selectSportbikeStatement = connection.prepareStatement(
+                "SELECT id FROM sportbikes WHERE manufacturer = ? AND model = ? AND year = ? AND color = ? AND maxSpeed = ?"
+        );
+        selectSportbikeStatement.setString(1, sportbike.getManufacturer().name());
+        selectSportbikeStatement.setString(2, sportbike.getModel());
+        selectSportbikeStatement.setInt(3, sportbike.getYear());
+        selectSportbikeStatement.setString(4, sportbike.getColor().name());
+        selectSportbikeStatement.setInt(5, sportbike.getMaxSpeed());
+        ResultSet sportbikeResultSet = selectSportbikeStatement.executeQuery();
+
+        while (sportbikeResultSet.next()) {
+            int sportbikeId = sportbikeResultSet.getInt("id");
+            PreparedStatement updateStatement = connection.prepareStatement(
+                    "UPDATE sportbikes SET petrolengine_id = ? WHERE id = ?"
+            );
+            updateStatement.setInt(1, petrolEngineId);
+            updateStatement.setInt(2, sportbikeId);
+            updateStatement.executeUpdate();
+            updateStatement.close();
+
+            System.out.println("Baza de date a fost actualizata.");
+        }
+
+        sportbikeResultSet.close();
+        selectSportbikeStatement.close();
+    }
+
+
+
 
 
 

@@ -88,7 +88,7 @@ public class VehicleService implements IVehicleService{
             throw new InvalidWheelCountException("Numarul de pneuri ale motocicletei este invalid!");
         motorcycles.add(mtr);
         AuditService.getInstance().write("Motocicleta " + mtr.getManufacturer() + " " + mtr.getModel() + " a fost adaugata");
-        System.out.println("Motocicleta a fost adaugata cu succes!\n");
+        System.out.println("Motocicleta a fost adaugata cu succes!");
     }
 
     public void addPetrolEngine(PetrolEngine eng){ // false is petrol, true is diesel engine
@@ -103,7 +103,7 @@ public class VehicleService implements IVehicleService{
         petrolEngines.putIfAbsent(eng.getCapacity(), new ArrayList<PetrolEngine>());
         petrolEngines.get(eng.getCapacity()).add(eng);
         AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost adaugat");
-        System.out.println("Motorul a fost adaugat cu succes!\n");
+        System.out.println("Motorul a fost adaugat cu succes!");
     }
 
     public void addDieselEngine(DieselEngine eng){ // false is petrol, true is diesel engine
@@ -118,7 +118,7 @@ public class VehicleService implements IVehicleService{
         dieselEngines.putIfAbsent(eng.getCapacity(), new ArrayList<DieselEngine>());
         dieselEngines.get(eng.getCapacity()).add(eng);
         AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost adaugat");
-        System.out.println("Motorul a fost adaugat cu succes!\n");
+        System.out.println("Motorul a fost adaugat cu succes!");
     }
 
     public void getCars() {
@@ -172,6 +172,12 @@ public class VehicleService implements IVehicleService{
             for (Iterator<DieselEngine> it = engines.iterator(); it.hasNext();) {
                 DieselEngine engine = it.next();
                 if (engine.equals(eng)) {
+                    for (Car car : cars) {
+                        if (car.getEngine() != null && car.getEngine().equals(engine)) {
+                            car.setEngine(null);
+                        }
+                    }
+
                     AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost sters");
                     it.remove();
                     DatabaseService.getInstance().deleteDieselEngineFromDb(eng);
@@ -183,12 +189,24 @@ public class VehicleService implements IVehicleService{
         System.out.println("Motorul nu a fost gasit!\n");
     }
 
+
     public void removePetrolEngine(PetrolEngine eng) throws SQLException {
         List<PetrolEngine> engines = petrolEngines.get(eng.getCapacity());
         if (engines != null) {
             for (Iterator<PetrolEngine> it = engines.iterator(); it.hasNext();) {
                 PetrolEngine engine = it.next();
                 if (engine.equals(eng)) {
+                    for (Car car : cars) {
+                        if (car.getEngine() != null && car.getEngine().equals(engine)) {
+                            car.setEngine(null);
+                        }
+                    }
+                    for (Motorcycle motorcycle : motorcycles) {
+                        if (motorcycle.getEngine() != null && motorcycle.getEngine().equals(engine)) {
+                            motorcycle.setEngine(null);
+                        }
+                    }
+
                     AuditService.getInstance().write("Motorul " + eng.getCapacity() + " " + eng.getHorsePower() + " a fost sters");
                     it.remove();
                     DatabaseService.getInstance().deletePetrolEngineFromDb(eng);
@@ -200,7 +218,8 @@ public class VehicleService implements IVehicleService{
         System.out.println("Motorul nu a fost gasit!\n");
     }
 
-    public void addEngineToCar(int carIndex, int engineIndex, boolean diesel) {
+
+    public void addEngineToCar(int carIndex, int engineIndex, boolean diesel) throws SQLException {
         if(carIndex == -1)
         {
             carIndex = cars.size();
@@ -220,6 +239,9 @@ public class VehicleService implements IVehicleService{
                 }
             }
             car.setEngine(engine);
+            if(car instanceof Sedan && carIndex != -1){
+                DatabaseService.getInstance().addPetrolEngineToSedanDb(engine, (Sedan) car);
+            }
             AuditService.getInstance().write("Motorul " + engine.getCapacity() +" a fost adaugat la masina " + car.getModel());
             System.out.println("Motorul a fost adaugat pe masina!");
         }
@@ -237,12 +259,15 @@ public class VehicleService implements IVehicleService{
                 }
             }
             car.setEngine(engine);
+            if(car instanceof Sedan && carIndex != -1){
+                DatabaseService.getInstance().addDieselEngineToSedanDb(engine, (Sedan) car);
+            }
             AuditService.getInstance().write("Motorul " + engine.getCapacity() +" a fost adaugat la masina " + car.getModel());
             System.out.println("Motorul a fost adaugat pe masina!");
         }
     }
 
-    public void addEngineToMotorcycle(int carIndex, int engineIndex) {
+    public void addEngineToMotorcycle(int carIndex, int engineIndex) throws SQLException {
         if(carIndex == -1)
         {
             carIndex = motorcycles.size();
@@ -261,6 +286,9 @@ public class VehicleService implements IVehicleService{
             }
         }
         car.setEngine(engine);
+        if(car instanceof Sportbike && carIndex != -1){
+            DatabaseService.getInstance().addPetrolEngineToSportbikeDb(engine, (Sportbike) car);
+        }
         AuditService.getInstance().write("Motorul " + engine.getCapacity() +" a fost adaugat la motocicleta " + car.getModel());
         System.out.println("Motorul a fost adaugat pe motocicleta!");
     }
@@ -370,7 +398,7 @@ public class VehicleService implements IVehicleService{
     }
 
     public int getEngineIdFromDatabase(Car sedan) throws SQLException {
-        int engineId = -1; // Default value if engine not found
+        int engineId = -1;
         Connection connection = DatabaseConfig.getInstance().getDatabaseConnection();
         PreparedStatement statement = connection.prepareStatement(
                 "SELECT id FROM engines WHERE capacity = ? AND horsePower = ? AND cylinderNumber = ? AND torque = ?"

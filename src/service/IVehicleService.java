@@ -17,8 +17,8 @@ public interface IVehicleService{
     int getPetrolEngines();
     void removeDieselEngine(DieselEngine eng) throws SQLException;
     void removePetrolEngine(PetrolEngine eng) throws SQLException;
-    void addEngineToCar(int carIndex, int engineIndex, boolean diesel);
-    void addEngineToMotorcycle(int carIndex, int engineIndex);
+    void addEngineToCar(int carIndex, int engineIndex, boolean diesel) throws SQLException;
+    void addEngineToMotorcycle(int carIndex, int engineIndex) throws SQLException;
     void removeCar(int carIndex) throws SQLException;
     void removeMotorcycle(int carIndex) throws SQLException;
     void loadSedansFromCSV(String filePath) throws IOException;

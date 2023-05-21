@@ -315,6 +315,7 @@ public class Main {
                         }
                         catch (Exception exception){
                             in.nextLine();
+                            //System.out.println(exception.getMessage());
                             showBadIndex();
                         }
                         break;
@@ -333,6 +334,7 @@ public class Main {
                         }
                         catch (Exception exception){
                             in.nextLine();
+                            System.out.println(exception.getMessage());
                             showBadIndex();
                         }
                         break;
